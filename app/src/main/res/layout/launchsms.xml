@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingLeft="2dip"
+    android:paddingRight="4dip"
+    android:text="Recipient Number"
+    />
+
+<EditText android:id="@+id/messageNumber"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:cursorVisible="true"
+    android:editable="true"
+    android:singleLine="true"
+
+    />
+
+<Button android:id="@+id/sayhello"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="Say Hello!"
+    android:onClick="sayHello"
+    />
+</LinearLayout>
