@@ -40,6 +40,7 @@ public class CallStateListener extends PhoneStateListener {
                         LENGTH_LONG).show();
                 sharedPreferencesEditor.putLong("lastIncomingCall", System.currentTimeMillis());
                 sharedPreferencesEditor.putBoolean("shouldCompare", true);
+                sharedPreferencesEditor.putBoolean("lastTestPassed", true);
                 sharedPreferencesEditor.apply();
                 break;
 

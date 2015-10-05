@@ -23,7 +23,8 @@ public class MainActivity extends AppCompatActivity {
         messageNumber=(EditText)findViewById(R.id.messageNumber);
         Button helloButton = (Button) findViewById(R.id.sayhello);
 
-        startService(new Intent(MainActivity.this, CallBackDiffCheckerService.class));
+        //startService(new Intent(MainActivity.this, CallBackDiffCheckerService.class));
+        startService(new Intent(MainActivity.this, SmsSenderService.class));
 
     }
 

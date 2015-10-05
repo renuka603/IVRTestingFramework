@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -16,21 +15,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-/**
- * Created by RenukaThakur on 9/24/15.
- */
-public class CallBackDiffCheckerService extends Service {
+public class SmsSenderService extends Service {
 
-    Handler handler;
-    int DELAY_MILLISECONDS = 300;
-
-    SharedPreferences sharedPreferences;
-    SharedPreferences.Editor sharedPreferenceEditor;
-
-    long lastOutgoingCall, lastIncomingCall;
-    boolean shouldCompare;
-
+    int DELAY_MILLISECONDS = 1800000;
     RequestQueue requestQueue;
+
+    Handler h;
 
     @Nullable
     @Override
@@ -39,20 +29,17 @@ public class CallBackDiffCheckerService extends Service {
     }
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        sharedPreferences = getSharedPreferences("IVR_RENUKA", MODE_PRIVATE);
-        sharedPreferenceEditor = sharedPreferences.edit();
-    }
-
-    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        handler = new Handler();
+
+        h = new Handler();
+        final SharedPreferences sharedPreferences = getSharedPreferences("IVR_RENUKA", MODE_PRIVATE);
+        final SharedPreferences.Editor sharedPreferencesEditor = sharedPreferences.edit();
+
         requestQueue = Volley.newRequestQueue(this);
         final StringRequest SucessCallbackRequest = new StringRequest(Request.Method.GET, "http://api.babajob.com/api/sms/0/?toNumber=9740530275&messageBody=Passed", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d("PhonStatReceiver", response);
+                Log.d("PhoneStatReceiver", response);
             }
         }, new Response.ErrorListener() {
             @Override
@@ -76,36 +63,21 @@ public class CallBackDiffCheckerService extends Service {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                // CONTINUOUS CODE OVER HERE
-                lastOutgoingCall = sharedPreferences.getLong("lastOutgoingCall", -1);
-                lastIncomingCall = sharedPreferences.getLong("lastIncomingCall", -1);
-                shouldCompare = sharedPreferences.getBoolean("shouldCompare", false);
-
-                if(shouldCompare) {
-                    if(lastIncomingCall != -1 && lastOutgoingCall != -1 && lastIncomingCall - lastOutgoingCall > 900000) {
-                        // fire the "FAILED" api call
-                        Log.d("PhoneStatReceiver", "FAILED...." + lastIncomingCall + ":" + lastOutgoingCall);
-
+                boolean lastTestPassed = sharedPreferences.getBoolean("lastTestPassed", false);
+                if(lastTestPassed) {
+                    Log.d("PhoneStatReceiver", "PASSED....");
+                    requestQueue.add(SucessCallbackRequest);
+                } else {
+                    Log.d("PhoneStatReceiver", "FAILED....");
                     requestQueue.add(ErrorCallbackRequest);
-
-                    } else if( lastIncomingCall == -1 ) {
-                        Log.d("PhoneStatReceiver", "FAILED...." + lastIncomingCall + ":" + lastOutgoingCall);
-
-                        requestQueue.add(ErrorCallbackRequest);
-                    } else {
-                        // fire the "SUCCESS" api call
-                        Log.d("PhoneStatReceiver", "SUCCESS....");
-                        requestQueue.add(SucessCallbackRequest);
-
-                    }
-                    sharedPreferenceEditor.putBoolean("shouldCompare", false);
-                    sharedPreferenceEditor.apply();
                 }
-
-                handler.postDelayed(this, DELAY_MILLISECONDS);
+                sharedPreferencesEditor.putBoolean("lastTestPassed", false);
+                h.postDelayed(this, DELAY_MILLISECONDS);
             }
         };
-        handler.postDelayed(r, DELAY_MILLISECONDS);
+
+        h.postDelayed(r, DELAY_MILLISECONDS);
+
         return START_STICKY;
     }
 }
